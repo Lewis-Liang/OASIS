@@ -128,6 +128,7 @@ def put_on_multi_gpus(model, opt):
         gpus = list(map(int, opt.gpu_ids.split(",")))
         model = DataParallelWithCallback(model, device_ids=gpus).cuda()
     else:
+        # pass
         model.module = model
     assert len(opt.gpu_ids.split(",")) == 0 or opt.batch_size % len(opt.gpu_ids.split(",")) == 0
     return model
@@ -144,7 +145,7 @@ def preprocess_input(opt, data):
     if opt.gpu_ids != "-1":
         input_label = torch.cuda.FloatTensor(bs, nc, h, w).zero_()
     else:
-        input_label = torch.FloatTensor(bs, nc, h, w).zero_()
+       input_label = torch.FloatTensor(bs, nc, h, w).zero_()
     input_semantics = input_label.scatter_(1, label_map, 1.0)
     return data['image'], input_semantics
 
