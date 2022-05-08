@@ -8,6 +8,8 @@ def get_dataset_name(mode):
         return "CityscapesDataset"
     if mode == "coco":
         return "CocoStuffDataset"
+    if mode == "landscape":
+        return "LandscapeDataset"
     else:
         ValueError("There is no such dataset regime as %s" % mode)
 
@@ -24,3 +26,4 @@ def get_dataloaders(opt):
     dataloader_val = torch.utils.data.DataLoader(dataset_val, batch_size = opt.batch_size, shuffle = False, drop_last=False)
 
     return dataloader_train, dataloader_val
+

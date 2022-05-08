@@ -4,17 +4,22 @@ from torchvision import transforms as TR
 import os
 from PIL import Image
 
-class CityscapesDataset(torch.utils.data.Dataset):
-    # 原图大小是1024 * 2048，所以load_size=512相当于读入低分辨率的原图像
+class LandscapeDataset(torch.utils.data.Dataset):
+    # 原图大小是768 * 1024
+    # load_size=512相当于读入低分辨率的原图像；load_size=1024相当于读入正常分辨率的图像
     def __init__(self, opt, for_metrics):
         opt.load_size = 512
         opt.crop_size = 512
-        opt.label_nc = 34
-        opt.contain_dontcare_label = True
-        opt.semantic_nc = 35 # label_nc + unknown
+        # 默认29个类
+        opt.label_nc = 29
+        # TODO 先改为False，如果有需要再改回来
+        opt.contain_dontcare_label = False
+        # TODO contain_dontcare_label为False，semantic_nc就不用加一
+        opt.semantic_nc = 29 # label_nc + unknown
         opt.cache_filelist_read = False
         opt.cache_filelist_write = False
-        opt.aspect_ratio = 2.0
+        # 宽高比：4:3
+        opt.aspect_ratio = 1024 / 768
 
         self.opt = opt
         self.for_metrics = for_metrics
@@ -29,27 +34,31 @@ class CityscapesDataset(torch.utils.data.Dataset):
         image, label = self.transforms(image, label)
         label = label * 255
         return {"image": image, "label": label, "name": self.images[idx]}
-
+        
+    # landscape数据集里面，没有划分验证集，这里暂时也不显式地从训练集划分出验证集；
+    # 直接用train来训练，用val（A榜评测数据集）来测试。
     def list_images(self):
         # for_metrics的意义暂不明确，可以推理的是它的作用与 opt.phase=='test' 有联系
         mode = "val" if self.opt.phase == "test" or self.for_metrics else "train"
+
         images = []
-        path_img = os.path.join(self.opt.dataroot, "leftImg8bit", mode)
-        for city_folder in sorted(os.listdir(path_img)):
-            cur_folder = os.path.join(path_img, city_folder)
-            for item in sorted(os.listdir(cur_folder)):
-                images.append(os.path.join(city_folder, item))
+        # <landscape_dataset_dir> / train / {imgs, labels}
+        path_img = os.path.join(self.opt.dataroot, mode, "imgs")
+        for item in sorted(os.listdir(path_img)):
+            images.append(item)
+            
         labels = []
-        path_lab = os.path.join(self.opt.dataroot, "gtFine", mode)
-        for city_folder in sorted(os.listdir(path_lab)):
-            cur_folder = os.path.join(path_lab, city_folder)
-            for item in sorted(os.listdir(cur_folder)):
-                if item.find("labelIds") != -1:
-                    labels.append(os.path.join(city_folder, item))
+        path_lab = os.path.join(self.opt.dataroot, mode, "labels")
+        for item in sorted(os.listdir(path_lab)):
+            images.append(item)
+
+        # sanity check（完整性检查）
         assert len(images)  == len(labels), "different len of images and labels %s - %s" % (len(images), len(labels))
         for i in range(len(images)):
-            assert images[i].replace("_leftImg8bit.png", "") == labels[i].replace("_gtFine_labelIds.png", ""),\
+            image_name, label_name = os.path.splitext(images[i])[0], os.path.splitext(labels[i])[0]
+            assert image_name == label_name,\
                 '%s and %s are not matching' % (images[i], labels[i])
+                
         return images, labels, (path_img, path_lab)
 
     def transforms(self, image, label):
