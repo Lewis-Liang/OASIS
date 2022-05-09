@@ -55,7 +55,7 @@ class OASIS_model(nn.Module):
             loss_D_real = losses_computer.loss(output_D_real, label, for_real=True)
             loss_D += loss_D_real
             if not self.opt.no_labelmix:
-                mixed_inp, mask = generate_labelmix(label, fake, image)
+                mixed_inp, mask = generate_labelmix(self.opt, label, fake, image)
                 output_D_mixed = self.netD(mixed_inp)
                 loss_D_lm = self.opt.lambda_labelmix * losses_computer.loss_labelmix(mask, output_D_mixed, output_D_fake,
                                                                                 output_D_real)
@@ -128,7 +128,6 @@ def put_on_multi_gpus(model, opt):
         gpus = list(map(int, opt.gpu_ids.split(",")))
         model = DataParallelWithCallback(model, device_ids=gpus).cuda()
     else:
-        # pass
         model.module = model
     assert len(opt.gpu_ids.split(",")) == 0 or opt.batch_size % len(opt.gpu_ids.split(",")) == 0
     return model
@@ -150,11 +149,15 @@ def preprocess_input(opt, data):
     return data['image'], input_semantics
 
 
-def generate_labelmix(label, fake_image, real_image):
+def generate_labelmix(opt, label, fake_image, real_image):
     target_map = torch.argmax(label, dim = 1, keepdim = True)
     all_classes = torch.unique(target_map)
     for c in all_classes:
-        target_map[target_map == c] = torch.randint(0,2,(1,))
+        mask = torch.randint(0,2,(1,))
+        if opt.gpu_ids != "-1":
+            target_map[target_map == c] = mask.cuda()
+        else:
+            target_map[target_map == c] = mask
     target_map = target_map.float()
     mixed_image = target_map*real_image+(1-target_map)*fake_image
     return mixed_image, target_map

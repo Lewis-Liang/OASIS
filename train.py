@@ -66,6 +66,7 @@ for epoch in range(start_epoch, opt.num_epochs):
             if is_best:
                 utils.save_networks(opt, cur_iter, model, best=True)
         visualizer_losses(cur_iter, losses_G_list+losses_D_list)
+    print("one epoch end~~~~~~")
 
 #--- after training ---#
 utils.update_EMA(model, cur_iter, dataloader, opt, force_run_stats=True)

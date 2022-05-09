@@ -62,7 +62,6 @@ class LandscapeDataset(torch.utils.data.Dataset):
         return images, labels, (path_img, path_lab)
 
     def transforms(self, image, label):
-        print(image.size, label.size)
         assert image.size == label.size
         # resize (load_size不等于原图的大小，crop_size是在load_size基础上进行裁剪的)
         new_width, new_height = (int(self.opt.load_size / self.opt.aspect_ratio), self.opt.load_size)
@@ -76,7 +75,6 @@ class LandscapeDataset(torch.utils.data.Dataset):
         # to tensor（像RGB mode下的PIL.Image对象，会转换为FloatTensor，同时会缩放到[0,1.0]，所以后续label会乘上255）
         image = TR.functional.to_tensor(image)
         label = TR.functional.to_tensor(label)
-        print(label)
         # normalize（只有图片要规范化）
         image = TR.functional.normalize(image, (0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
         return image, label
