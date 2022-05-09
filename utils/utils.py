@@ -7,7 +7,7 @@ import models.models as models
 import matplotlib.pyplot as plt
 from PIL import Image
 
-
+# 
 def fix_seed(seed):
     random.seed(seed)
     torch.manual_seed(seed)
