@@ -191,7 +191,7 @@ class image_saver():
         self.save_images(image, "real", cur_iter)
         with torch.no_grad():
             model.eval()
-            fake = model.netG(label)
+            fake = model.module.netG(label)
             self.save_images(fake, "fake", cur_iter)
             model.train()
             if not self.opt.no_EMA:
