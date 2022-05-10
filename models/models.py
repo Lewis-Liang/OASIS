@@ -1,3 +1,4 @@
+from turtle import forward
 from models.sync_batchnorm import DataParallelWithCallback
 import models.generator as generators
 import models.discriminator as discriminators
@@ -7,6 +8,15 @@ import torch
 import torch.nn as nn
 from torch.nn import init
 import models.losses as losses
+
+
+class BaseContainer(nn.Module):
+    def __init__(self, module):
+        super(BaseContainer, self).__init__()
+        self.module = module
+    
+    def forward(self, *inputs, **kwargs):
+        return self.module(*inputs, **kwargs)
 
 
 class OASIS_model(nn.Module):
@@ -124,11 +134,13 @@ class OASIS_model(nn.Module):
 
 
 def put_on_multi_gpus(model, opt):
+    # wrap a model with DataParallelWithCallback if use gpu
     if opt.gpu_ids != "-1":
         gpus = list(map(int, opt.gpu_ids.split(",")))
         model = DataParallelWithCallback(model, device_ids=gpus).cuda()
+    # else wrap it with a wrapper with no operation if use cpu
     else:
-        model.module = model
+        model = BaseContainer(model)
     assert len(opt.gpu_ids.split(",")) == 0 or opt.batch_size % len(opt.gpu_ids.split(",")) == 0
     return model
 
