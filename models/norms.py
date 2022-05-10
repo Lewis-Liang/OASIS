@@ -30,7 +30,7 @@ class SPADE(nn.Module):
 
 def get_spectral_norm(opt):
     if opt.no_spectral_norm:
-        return torch.nn.Identity()
+        return nn.Identity()
     else:
         return spectral_norm
 

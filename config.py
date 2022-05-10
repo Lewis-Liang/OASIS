@@ -14,6 +14,12 @@ def read_arguments(train=True):
         if opt.continue_train:
             update_options_from_file(opt, parser)
     opt = parser.parse_args()
+    opt.name = "oasis_landscape"
+    opt.dataset_node = "landscape"
+    opt.gpu_ids = "-1"
+    opt.dataroot = "datasets/landscape"
+    opt.batch_size = 1
+    opt.num_epochs = 2
     opt.phase = 'train' if train else 'test'
     if train:
         opt.loaded_latest_iter = 0 if not opt.continue_train else load_iter(opt)

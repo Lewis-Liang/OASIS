@@ -7,14 +7,14 @@ import models.models as models
 import matplotlib.pyplot as plt
 from PIL import Image
 
-# 
+# 设置随机数种子
 def fix_seed(seed):
     random.seed(seed)
     torch.manual_seed(seed)
     torch.cuda.manual_seed(seed)
     np.random.seed(seed)
 
-
+# 计算开始的epoch和iter
 def get_start_iters(start_iter, dataset_size):
     if start_iter == 0:
         return 0, 0
@@ -125,8 +125,8 @@ class losses_saver():
 def update_EMA(model, cur_iter, dataloader, opt, force_run_stats=False):
     # update weights based on new generator weights
     with torch.no_grad():
-        state_EMA = model.module.netEMA.state_dict()
-        state_G = model.module.netG.state_dict()
+        state_EMA = model.netEMA.state_dict()
+        state_G = model.netG.state_dict()
         for key in state_EMA:
             state_EMA[key].data.copy_(
                 state_EMA[key].data * opt.EMA_decay +
@@ -144,7 +144,7 @@ def update_EMA(model, cur_iter, dataloader, opt, force_run_stats=False):
             num_upd = 0
             for i, data_i in enumerate(dataloader):
                 image, label = models.preprocess_input(opt, data_i)
-                fake = model.module.netEMA(label)
+                fake = model.netEMA(label)
                 num_upd += 1
                 if num_upd > 50:
                     break
@@ -154,24 +154,24 @@ def save_networks(opt, cur_iter, model, latest=False, best=False):
     path = os.path.join(opt.checkpoints_dir, opt.name, "models")
     os.makedirs(path, exist_ok=True)
     if latest:
-        torch.save(model.module.netG.state_dict(), path+'/%s_G.pth' % ("latest"))
-        torch.save(model.module.netD.state_dict(), path+'/%s_D.pth' % ("latest"))
+        torch.save(model.netG.state_dict(), path+'/%s_G.pth' % ("latest"))
+        torch.save(model.netD.state_dict(), path+'/%s_D.pth' % ("latest"))
         if not opt.no_EMA:
-            torch.save(model.module.netEMA.state_dict(), path+'/%s_EMA.pth' % ("latest"))
+            torch.save(model.netEMA.state_dict(), path+'/%s_EMA.pth' % ("latest"))
         with open(os.path.join(opt.checkpoints_dir, opt.name)+"/latest_iter.txt", "w") as f:
             f.write(str(cur_iter))
     elif best:
-        torch.save(model.module.netG.state_dict(), path+'/%s_G.pth' % ("best"))
-        torch.save(model.module.netD.state_dict(), path+'/%s_D.pth' % ("best"))
+        torch.save(model.netG.state_dict(), path+'/%s_G.pth' % ("best"))
+        torch.save(model.netD.state_dict(), path+'/%s_D.pth' % ("best"))
         if not opt.no_EMA:
-            torch.save(model.module.netEMA.state_dict(), path+'/%s_EMA.pth' % ("best"))
+            torch.save(model.netEMA.state_dict(), path+'/%s_EMA.pth' % ("best"))
         with open(os.path.join(opt.checkpoints_dir, opt.name)+"/best_iter.txt", "w") as f:
             f.write(str(cur_iter))
     else:
-        torch.save(model.module.netG.state_dict(), path+'/%d_G.pth' % (cur_iter))
-        torch.save(model.module.netD.state_dict(), path+'/%d_D.pth' % (cur_iter))
+        torch.save(model.netG.state_dict(), path+'/%d_G.pth' % (cur_iter))
+        torch.save(model.netD.state_dict(), path+'/%d_D.pth' % (cur_iter))
         if not opt.no_EMA:
-            torch.save(model.module.netEMA.state_dict(), path+'/%d_EMA.pth' % (cur_iter))
+            torch.save(model.netEMA.state_dict(), path+'/%d_EMA.pth' % (cur_iter))
 
 
 class image_saver():
@@ -181,7 +181,9 @@ class image_saver():
         self.grid = 5
         self.path = os.path.join(opt.checkpoints_dir, opt.name, "images")+"/"
         self.opt = opt
-        self.num_cl = opt.label_nc + 2
+        self.num_cl = opt.label_nc + 1
+        if opt.contain_dontcare_label:
+            self.num_cl = opt.num_cl + 1
         os.makedirs(self.path, exist_ok=True)
 
     def visualize_batch(self, model, image, label, cur_iter):
@@ -189,12 +191,12 @@ class image_saver():
         self.save_images(image, "real", cur_iter)
         with torch.no_grad():
             model.eval()
-            fake = model.module.netG(label)
+            fake = model.netG(label)
             self.save_images(fake, "fake", cur_iter)
             model.train()
             if not self.opt.no_EMA:
                 model.eval()
-                fake = model.module.netEMA(label)
+                fake = model.netEMA(label)
                 self.save_images(fake, "fake_ema", cur_iter)
                 model.train()
 

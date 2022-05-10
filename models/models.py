@@ -124,12 +124,12 @@ class OASIS_model(nn.Module):
 
 
 def put_on_multi_gpus(model, opt):
+    # wrap a model with DataParallelWithCallback if use gpu
     if opt.gpu_ids != "-1":
         gpus = list(map(int, opt.gpu_ids.split(",")))
         model = DataParallelWithCallback(model, device_ids=gpus).cuda()
-    else:
-        model.module = model
     assert len(opt.gpu_ids.split(",")) == 0 or opt.batch_size % len(opt.gpu_ids.split(",")) == 0
+    # no operation if use cpu
     return model
 
 
