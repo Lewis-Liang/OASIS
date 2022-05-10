@@ -21,15 +21,12 @@ if __name__ == '__main__':
 
     #--- create models ---#
     model = models.OASIS_model(opt)
-    # keep the model variable pointing to the exact OASIS_model
-    # so that we can access the model through the same interface
-    if not opt.gpu_ids == "-1":
-        model = models.put_on_multi_gpus(model, opt).module
-    print(len(model._modules))
+    model = models.put_on_multi_gpus(model, opt)
+    print(len(model.module._modules))
 
     #--- create optimizers ---#
-    optimizerG = torch.optim.Adam(model.netG.parameters(), lr=opt.lr_g, betas=(opt.beta1, opt.beta2))
-    optimizerD = torch.optim.Adam(model.netD.parameters(), lr=opt.lr_d, betas=(opt.beta1, opt.beta2))
+    optimizerG = torch.optim.Adam(model.module.netG.parameters(), lr=opt.lr_g, betas=(opt.beta1, opt.beta2))
+    optimizerD = torch.optim.Adam(model.module.netD.parameters(), lr=opt.lr_d, betas=(opt.beta1, opt.beta2))
 
     #--- the training loop ---#
     already_started = False
@@ -43,14 +40,14 @@ if __name__ == '__main__':
             image, label = models.preprocess_input(opt, data_i)
 
             #--- generator update ---#
-            model.netG.zero_grad()
+            model.module.netG.zero_grad()
             loss_G, losses_G_list = model(image, label, "losses_G", losses_computer)
             loss_G, losses_G_list = loss_G.mean(), [loss.mean() if loss is not None else None for loss in losses_G_list]
             loss_G.backward()
             optimizerG.step()
 
             #--- discriminator update ---#
-            model.netD.zero_grad()
+            model.module.netD.zero_grad()
             loss_D, losses_D_list = model(image, label, "losses_D", losses_computer)
             loss_D, losses_D_list = loss_D.mean(), [loss.mean() if loss is not None else None for loss in losses_D_list]
             loss_D.backward()

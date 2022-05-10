@@ -15,8 +15,7 @@ image_saver = utils.results_saver(opt)
 
 #--- create models ---#
 model = models.OASIS_model(opt)
-if not opt.gpu_ids == "-1":
-    model = models.put_on_multi_gpus(model, opt).module
+model = models.put_on_multi_gpus(model, opt)
 model.eval()
 
 #--- iterate over validation set ---#
