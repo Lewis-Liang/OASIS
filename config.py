@@ -15,7 +15,7 @@ def read_arguments(train=True):
     # opt.dataroot = "datasets/landscape"
     # opt.batch_size = 1
     # opt.num_epochs = 2
-    # opt = parser.parse_args()
+    opt = parser.parse_args()
     if train:
         set_dataset_default_lm(opt, parser)
         if opt.continue_train:
