@@ -8,7 +8,14 @@ def read_arguments(train=True):
     parser = argparse.ArgumentParser()
     parser = add_all_arguments(parser, train)
     parser.add_argument('--phase', type=str, default='train')
-    opt = parser.parse_args()
+    # for debug in cpu
+    # opt.name = "oasis_landscape"
+    # opt.dataset_node = "landscape"
+    # opt.gpu_ids = "-1"
+    # opt.dataroot = "datasets/landscape"
+    # opt.batch_size = 1
+    # opt.num_epochs = 2
+    # opt = parser.parse_args()
     if train:
         set_dataset_default_lm(opt, parser)
         if opt.continue_train:
