@@ -2,14 +2,18 @@ import random
 import torch
 from torchvision import transforms as TR
 import os
+import os.path as osp
 from PIL import Image
 
 class LandscapeDataset(torch.utils.data.Dataset):
     # 原图大小是768 * 1024
     # load_size=512相当于读入低分辨率的原图像；load_size=1024相当于读入正常分辨率的图像
     def __init__(self, opt, for_metrics):
-        opt.load_size = 512
-        opt.crop_size = 512
+        # test low resolution 0511
+        opt.load_size = 256
+        opt.crop_size = 256
+        #opt.load_size = 512
+        #opt.crop_size = 512
         # 默认29个类
         opt.label_nc = 29
         # TODO 先改为False，如果有需要再改回来
@@ -55,7 +59,7 @@ class LandscapeDataset(torch.utils.data.Dataset):
         # sanity check（完整性检查）
         assert len(images)  == len(labels), "different len of images and labels %s - %s" % (len(images), len(labels))
         for i in range(len(images)):
-            image_name, label_name = os.path.splitext(images[i])[0], os.path.splitext(labels[i])[0]
+            image_name, label_name = os.path.splitext(osp.split(images[i])[1])[0], os.path.splitext(osp.split(labels[i])[1])[0]
             assert image_name == label_name,\
                 '%s and %s are not matching' % (images[i], labels[i])
                 

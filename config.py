@@ -8,18 +8,19 @@ def read_arguments(train=True):
     parser = argparse.ArgumentParser()
     parser = add_all_arguments(parser, train)
     parser.add_argument('--phase', type=str, default='train')
+    # for debug in cpu
+    # opt.name = "oasis_landscape"
+    # opt.dataset_node = "landscape"
+    # opt.gpu_ids = "-1"
+    # opt.dataroot = "datasets/landscape"
+    # opt.batch_size = 1
+    # opt.num_epochs = 2
     opt = parser.parse_args()
     if train:
         set_dataset_default_lm(opt, parser)
         if opt.continue_train:
             update_options_from_file(opt, parser)
     opt = parser.parse_args()
-    opt.name = "oasis_landscape"
-    opt.dataset_node = "landscape"
-    opt.gpu_ids = "-1"
-    opt.dataroot = "datasets/landscape"
-    opt.batch_size = 1
-    opt.num_epochs = 2
     opt.phase = 'train' if train else 'test'
     if train:
         opt.loaded_latest_iter = 0 if not opt.continue_train else load_iter(opt)
@@ -95,7 +96,7 @@ def set_dataset_default_lm(opt, parser):
         parser.set_defaults(EMA_decay=0.999)
     # jittor landscape
     if opt.dataset_mode == "landscape":
-        parser.set_defaults(lr_g=0.0002)
+        parser.set_defaults(lr_g=0.0001)
         parser.set_defaults(lambda_labelmix=5.0)
         parser.set_defaults(freq_fid=2500)
         parser.set_defaults(EMA_decay=0.999)
