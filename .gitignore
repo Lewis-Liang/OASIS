@@ -6,3 +6,6 @@ jobs/
 __pycache__/
 util/__pycache__/
 .idea/
+.ipynb_checkpoints/
+datasets/* !datasets/sampled_images
+datasets/* !datasets/split_dataset.ipynb
