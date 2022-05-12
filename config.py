@@ -82,6 +82,7 @@ def add_all_arguments(parser, train):
     else:
         parser.add_argument('--results_dir', type=str, default='./results/', help='saves testing results here.')
         parser.add_argument('--ckpt_iter', type=str, default='best', help='which epoch to load to evaluate a model')
+        parser.add_argument('--test_only', action='store_true', default=False, help='if specified, load dataset specified for test')
     return parser
 
 
