@@ -8,6 +8,14 @@ The code allows the users to reproduce and extend the results reported in the st
 
 [[OpenReview](https://openreview.net/forum?id=yvQKLaqNE6M)]  [[Arxiv](https://arxiv.org/abs/2012.04781)]  [[5min Video Summary](https://www.youtube.com/watch?v=vUm6vurIwyM)]  
 
+# 安装与使用:
+
+1. `git clone`
+2. 执行`bash download_data.sh landscape`下载数据集
+3. 进入`datasets`，调整`split_dataset.ipynb`的参数，如验证集数量`num`，各种路径等；随后执行所有`cell`，完成验证集分割
+4. **训练：** 执行`bash scripts/train_landscape.sh`
+5. **测试：** 执行`bash scripts/test_landscape.sh`
+
 # Overview
 
 This repository implements the OASIS model, which generates realistic looking images from semantic label maps. In addition, many different images can be generated from any given label map by simply resampling a noise vector (first two rows of the figure below). The model also allows to just resample parts of the image (see the last two rows of the figure below). Check out the paper for details, as well as the appendix, which contains many additional examples.
