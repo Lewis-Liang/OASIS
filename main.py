@@ -10,6 +10,7 @@ import config
 if __name__ == '__main__':
     #--- read options ---#
     opt = config.read_arguments(train=True)
+    opt.dataroot = "./datasets/sample_images"
 
     #--- create utils ---#
     timer = utils.timer(opt)

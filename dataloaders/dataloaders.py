@@ -21,7 +21,7 @@ def get_dataloaders(opt):
     file = __import__("dataloaders."+dataset_name)
 
     # test_only代表使用官方测试集
-    if opt.test_only:
+    if opt.phase=="test" and opt.test_only:
         dataset_test = file.__dict__[dataset_name].__dict__[dataset_name](opt, for_metrics=True)
         dataloader_test = torch.utils.data.DataLoader(dataset_test, batch_size = opt.batch_size, shuffle = False, drop_last = False, num_workers=4)
         # 保持接口统一性。加上None后，在test.py中就不需要修改接收的返回值数量了
