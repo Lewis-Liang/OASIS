@@ -30,10 +30,11 @@ class OASIS_Generator(nn.Module):
     def forward(self, input, z=None):
         seg = input
         if self.opt.gpu_ids != "-1":
+            # 是 seg.cuda 还是 seg=seg.cuda？
             seg.cuda()
         if not self.opt.no_3dnoise:
             dev = seg.get_device() if self.opt.gpu_ids != "-1" else "cpu"
-            z = torch.randn(seg.size(0), self.opt.z_dim, dtype=torch.float32, device=dev)
+            z = torch.randn([seg.size(0), self.opt.z_dim], dtype=torch.float32, device=dev)
             z = z.view(z.size(0), self.opt.z_dim, 1, 1)
             z = z.expand(z.size(0), self.opt.z_dim, seg.size(2), seg.size(3))
             seg = torch.cat((z, seg), dim = 1)
@@ -75,7 +76,8 @@ class ResnetBlock_with_SPADE(nn.Module):
             x_s = self.conv_s(self.norm_s(x, seg))
         else:
             x_s = x
-        dx = self.conv_0(self.activ(self.norm_0(x, seg)))
+        dx = self.activ(self.norm_0(x, seg))
+        dx = self.conv_0(dx)
         dx = self.conv_1(self.activ(self.norm_1(dx, seg)))
         out = x_s + dx
         return out

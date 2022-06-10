@@ -6,6 +6,9 @@ jobs/
 __pycache__/
 util/__pycache__/
 .idea/
+.vscode/
 **/.ipynb_checkpoints/
 datasets/* !datasets/sampled_images
 datasets/* !datasets/split_dataset.ipynb
+datasets/landscape
+datasets/landscape-full

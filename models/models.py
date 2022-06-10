@@ -1,4 +1,3 @@
-from turtle import forward
 from models.sync_batchnorm import DataParallelWithCallback
 import models.generator as generators
 import models.discriminator as discriminators
