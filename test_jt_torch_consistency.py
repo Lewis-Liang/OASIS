@@ -46,13 +46,14 @@ def init_networks(networks):
             if hasattr(m, 'weight') and m.weight is not None:
                 data = get_numpy_weight("normal", m.weight.shape[2], m.weight.shape[3])
                 weight = torch.cuda.FloatTensor(data[0].astype(np.float32))
-                m.weight.data = weight.expand_as(m.weight.data)
+                m.weight.data = weight.expand_as(m.weight.data).clone()
             if hasattr(m, 'bias') and m.bias is not None:
                 init.constant_(m.bias, 0.0)
         elif hasattr(m, 'weight') and (classname.find('Conv') != -1 or classname.find('Linear') != -1):
             data = get_numpy_weight("xavier_normal", m.weight.shape[2], m.weight.shape[3])
             weight = torch.cuda.FloatTensor(data[0].astype(np.float32))
-            m.weight.data = weight.expand_as(m.weight.data)
+            # 必须要加上clone，具体原因请查看：https://discuss.pytorch.org/t/about-error-more-than-one-element-of-the-written-to-tensor-refers-to-a-single-memory-location/85526
+            m.weight.data = weight.expand_as(m.weight.data).clone()
             if hasattr(m, 'bias') and m.bias is not None:
                 init.constant_(m.bias, 0.0)
     for net in networks:
@@ -77,8 +78,8 @@ if __name__ == "__main__":
     opt.no_labelmix = True
     # opt.no_spectral_norm = True
 
-
     dataloader, dataloader_val = dataloaders.get_dataloaders(opt)
+    losses_computer = losses.losses_computer(opt)
 
     netG = generators.OASIS_Generator(opt)
     netD = discriminators.OASIS_Discriminator(opt)
@@ -86,8 +87,25 @@ if __name__ == "__main__":
     netD.cuda()
     init_networks([netG,netD])
 
+    optimizerG = torch.optim.Adam(netG.parameters(), lr=opt.lr_g, betas=(opt.beta1, opt.beta2))
+    optimizerD = torch.optim.Adam(netD.parameters(), lr=opt.lr_d, betas=(opt.beta1, opt.beta2))
+
     for i, data_i in enumerate(dataloader):
+        # forward
         image, label = models.preprocess_input(opt, data_i)
         fake = netG(label)
-        print(fake.max(), fake.min())
+        print(fake.max().detach().cpu().data, fake.min().detach().cpu().data)
+        output_D = netD(fake)
+        print(output_D.max().detach().cpu().data, output_D.min().detach().cpu().data)
+        # loss
+        loss_G = 0
+        loss_G_adv = losses_computer.loss(output_D, label, for_real=True)
+        loss_G += loss_G_adv
+        loss_G_vgg = None
+        loss_G, losses_G_list = loss_G.mean(), [loss.mean() if loss is not None else None for loss in [loss_G_adv, loss_G_vgg]]
+        print(losses_G_list)
+        netG.zero_grad()
+        loss_G.backward()
+        optimizerG.step()
+        print("stop here to see weight changes")
 
