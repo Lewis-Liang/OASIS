@@ -79,6 +79,7 @@ if __name__ == "__main__":
 
 
     dataloader, dataloader_val = dataloaders.get_dataloaders(opt)
+    losses_computer = losses.losses_computer(opt)
 
     netG = generators.OASIS_Generator(opt)
     netD = discriminators.OASIS_Discriminator(opt)
@@ -87,7 +88,16 @@ if __name__ == "__main__":
     init_networks([netG,netD])
 
     for i, data_i in enumerate(dataloader):
+        # forward
         image, label = models.preprocess_input(opt, data_i)
         fake = netG(label)
         print(fake.max(), fake.min())
+        output_D = netD(fake)
+        print(output_D.max(), output_D.min())
+        # loss
+        loss_G = 0
+        loss_G_adv = losses_computer.loss(output_D, label, for_real=True)
+        loss_G += loss_G_adv
+        loss_G_vgg = None
+        loss_G, losses_G_list = loss_G.mean(), [loss.mean() if loss is not None else None for loss in losses_G_list]
 

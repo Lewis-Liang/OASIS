@@ -2,6 +2,7 @@ import argparse
 import pickle
 import os
 import utils.utils as utils
+import shutil
 
 
 def read_arguments(train=True):
@@ -109,6 +110,8 @@ def set_dataset_default_lm(opt, parser):
 
 def save_options(opt, parser):
     path_name = os.path.join(opt.checkpoints_dir,opt.name)
+    if os.path.exists(path_name):
+        shutil.rmtree(path_name)
     os.makedirs(path_name, exist_ok=True)
     with open(path_name + '/opt.txt', 'wt') as opt_file:
         for k, v in sorted(vars(opt).items()):
