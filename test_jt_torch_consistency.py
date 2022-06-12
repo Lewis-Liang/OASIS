@@ -61,10 +61,12 @@ def init_networks(networks):
 
 if __name__ == "__main__":
     opt = config.read_arguments(train=True)
-    print(np.random.randint(0,5, size=(2,2)))
+    print(np.random.randint(0,5, size=(3,3)))
 
     # jittor
     opt.dataroot = "./datasets/sample_images"
+
+    opt.seed = 0
 
     opt.num_epochs = 2
     opt.batch_size = 1
@@ -87,6 +89,11 @@ if __name__ == "__main__":
     netD.cuda()
     init_networks([netG,netD])
 
+    # optim
+    optimizerG = torch.optim.Adam(netG.parameters(), lr=opt.lr_g, betas=(opt.beta1, opt.beta2))
+    optimizerD = torch.optim.Adam(netD.parameters(), lr=opt.lr_d, betas=(opt.beta1, opt.beta2))
+
+
     for i, data_i in enumerate(dataloader):
         # forward
         image, label = models.preprocess_input(opt, data_i)
@@ -99,5 +106,11 @@ if __name__ == "__main__":
         loss_G_adv = losses_computer.loss(output_D, label, for_real=True)
         loss_G += loss_G_adv
         loss_G_vgg = None
-        loss_G, losses_G_list = loss_G.mean(), [loss.mean() if loss is not None else None for loss in losses_G_list]
+        loss_G, losses_G_list = loss_G.mean(), [loss.mean() if loss is not None else None for loss in [loss_G_adv, loss_G_vgg]]
+        print(losses_G_list)
+        # backward
+        netG.zero_grad()
+        loss_G.backward()
+        print("stop here to see weight changes")
+        optimizerG.step()
 
