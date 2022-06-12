@@ -10,9 +10,9 @@ from PIL import Image
 # 设置随机数种子
 def fix_seed(seed):
     random.seed(seed)
+    np.random.seed(seed)
     torch.manual_seed(seed)
     torch.cuda.manual_seed(seed)
-    np.random.seed(seed)
 
 # 计算开始的epoch和iter
 def get_start_iters(start_iter, dataset_size):

@@ -2,6 +2,7 @@ import argparse
 import pickle
 import os
 import utils.utils as utils
+import shutil
 
 
 def read_arguments(train=True):
@@ -51,7 +52,7 @@ def add_all_arguments(parser, train):
     # for generator
     parser.add_argument('--num_res_blocks', type=int, default=6, help='number of residual blocks in G and D')
     parser.add_argument('--channels_G', type=int, default=64, help='# of gen filters in first conv layer in generator')
-    parser.add_argument('--param_free_norm', type=str, default='syncbatch', help='which norm to use in generator before SPADE')
+    parser.add_argument('--param_free_norm', type=str, default='batch', help='which norm to use in generator before SPADE')
     parser.add_argument('--spade_ks', type=int, default=3, help='kernel size of convs inside SPADE')
     parser.add_argument('--no_EMA', action='store_true', help='if specified, do *not* compute exponential moving averages')
     parser.add_argument('--EMA_decay', type=float, default=0.9999, help='decay in exponential moving averages')
@@ -109,6 +110,8 @@ def set_dataset_default_lm(opt, parser):
 
 def save_options(opt, parser):
     path_name = os.path.join(opt.checkpoints_dir,opt.name)
+    if os.path.exists(path_name):
+        shutil.rmtree(path_name)
     os.makedirs(path_name, exist_ok=True)
     with open(path_name + '/opt.txt', 'wt') as opt_file:
         for k, v in sorted(vars(opt).items()):

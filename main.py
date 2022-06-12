@@ -11,6 +11,14 @@ if __name__ == '__main__':
     #--- read options ---#
     opt = config.read_arguments(train=True)
     opt.dataroot = "./datasets/sample_images"
+    opt.num_epochs = 2
+    opt.batch_size = 1
+    opt.freq_fid = 4
+    opt.freq_print = 1
+    # opt.freq_save_loss = 1
+    # opt.no_spectral_norm = True
+
+    opt.gpu_ids = "0"
 
     #--- create utils ---#
     timer = utils.timer(opt)

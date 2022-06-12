@@ -1,4 +1,3 @@
-from turtle import forward
 from models.sync_batchnorm import DataParallelWithCallback
 import models.generator as generators
 import models.discriminator as discriminators
@@ -165,7 +164,12 @@ def generate_labelmix(opt, label, fake_image, real_image):
     target_map = torch.argmax(label, dim = 1, keepdim = True)
     all_classes = torch.unique(target_map)
     for c in all_classes:
-        mask = torch.randint(0,2,(1,))
+        # test
+        import numpy as np
+        mask_np = np.random.randint(0, 2, (1,))
+        mask = torch.from_numpy(mask_np)
+        # original
+        # mask = torch.randint(0,2,(1,))
         if opt.gpu_ids != "-1":
             target_map[target_map == c] = mask.cuda()
         else:
